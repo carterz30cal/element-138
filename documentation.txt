@@ -4,6 +4,8 @@ the base game will use tilemaps with X colours.
 the colours are:
 BLACK: 0,0,0
 WHITE: 255,255,255
+GREY:102,102,102
+LIGHT_GREY:166,166,166
 BLUE: 0,0,255
 RED: 255,0,0
 ORANGE: 255,128,0
