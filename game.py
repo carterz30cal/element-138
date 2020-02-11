@@ -35,16 +35,17 @@ def Init_Tilemaps():
         if "tilemap" in fr[0]:
             tilemaps.append([fr[1],[]])
             tilemaps_properties.append([])
-            fr = fr[2].rstrip().split("/").split("~")
+            fr = fr[2].rstrip().split("/")
             tia = len(tilemaps)-1
             tilemaps_properties[tia].append(fr[1:])
-            for t in fr[0]:
+            for t in fr:
                 tilemaps[tia][1].append([])
                 tian = len(tilemaps[tia][1])-1
-                for tl in t.split(";"):
+                print(t)
+                for tl in t.split("~")[0].split(";"):
                     tilemaps[tia][1][tian].append([])
                     tiam = len(tilemaps[tia][1][tian])-1
-                    for p in tl.rstrip().split(","):
+                    for p in tl.split(","):
                         tilemaps[tia][1][tian][tiam].append(int(p))
             print(tilemaps[tia])
         fo.close()
@@ -55,7 +56,7 @@ def Init():
     for ix in range(0,x):
         mapl.append([])
         for iy in range(0,y):
-            mapl[ix].append(rint(0,2))
+            mapl[ix].append(rint(0,5))
 
 
 # GAMEPLAY LOOP
@@ -73,7 +74,7 @@ while game:
         xc = ix//tilewidth
         for iy in range(0,y):
             yc = iy//tilewidth
-            c = palettes[0][tilemaps[0][1][mapl[xc][yc]][iy%tilewidth][ix%tilewidth]]
+            c = palettes[0][tilemaps[0][1][mapl[xc][yc]][ix%tilewidth][iy%tilewidth]]
             gfxdraw.box(surface,((ix*2,iy*2),(2,2)),c)
     pygame.display.flip()
     clock.tick(60)
