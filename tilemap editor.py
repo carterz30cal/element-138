@@ -30,16 +30,15 @@ def Save():
     #print(ftiles)
     try:
         f = open(tfile,"w")
-        sti = ""
-        for sx in range(tilewidth):
-            sti = sti + str(tile[0][sx][0])
-            for sy in range(1,tilewidth):
-                sti = sti + "," + str(tile[0][sx][sy])
-            sti = sti + ";"
-        sti = sti[:len(sti)-1] + "~" + tile[1]
-        print(tindex)
-        print(len(ftiles))
-        ftiles[tindex] = sti
+        if tindex != -1:
+            sti = ""
+            for sx in range(tilewidth):
+                sti = sti + str(tile[0][sx][0])
+                for sy in range(1,tilewidth):
+                    sti = sti + "," + str(tile[0][sx][sy])
+                sti = sti + ";"
+            sti = sti[:len(sti)-1] + "~" + tile[1]
+            ftiles[tindex] = sti
         data = ftiles[0]
         for p in ftiles[1:]:
             #print(p)
@@ -142,7 +141,8 @@ while game:
                 #abort without save
                 editing = False
             elif event.key == pygame.K_DELETE:
-                ftiles.pop(tindex)
+                print(ftiles.pop(tindex))
+                tindex = -1
                 Save()
                 editing = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
