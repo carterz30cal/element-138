@@ -53,7 +53,7 @@ def Save():
         raise Exception("oopsie doopsie errory wahhhhh")
 
 def Select():
-    global editing,tile,tindex,palette,tile,tfile,tpalette
+    global editing,tile,tindex,palette,tile,tfile,tpalette,ftiles
     files = glob("Mods/*/*.txt")
     tfiles = []
     for f in files:
