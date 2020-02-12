@@ -56,7 +56,7 @@ def Init():
     for ix in range(0,x):
         mapl.append([])
         for iy in range(0,y):
-            mapl[ix].append(rint(0,5))
+            mapl[ix].append(rint(0,3))
 
 
 # GAMEPLAY LOOP

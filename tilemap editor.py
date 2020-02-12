@@ -37,7 +37,10 @@ def Save():
                 for sy in range(1,tilewidth):
                     sti = sti + "," + str(tile[0][sx][sy])
                 sti = sti + ";"
-            sti = sti[:len(sti)-1] + "~" + tile[1]
+            s = ""
+            for p in tile[1:]:
+                s = s + "~" + p
+            sti = sti[:len(sti)-1] + s
             ftiles[tindex] = sti
         data = ftiles[0]
         for p in ftiles[1:]:
@@ -61,7 +64,7 @@ def Select():
         fio.close()
         if "tilemap" in fior.lower():
             tfiles.append(f)
-    print("-- tilemaps")
+    print("-- tilemaps (%d)" % len(tfiles))
     for t in range(len(tfiles)):
         print(str(t+1) + " - " + tfiles[t])
     file = int(input("Select a file (or type 0 to make a new file): "))-1
@@ -83,13 +86,16 @@ def Select():
         #print(palette)
         Import_Palette(palette)
         ftiles = filer.split("#")[2].split("/")
-    print("-- tiles (%s) --" % str(len(ftiles)))
+    print("-- tiles (%d) --" % len(ftiles))
     for ti in range(len(ftiles)):
         print(str(ti+1) + " - " + ftiles[ti].split("~")[1])
     tindex = int(input("Select a tile or type 0 to make a new one"))-1
     if tindex == -1:
         name = input("name yo tile: ")
         tile = (((("1,")*(tilewidth-1))+"1;")*(tilewidth-1) + (("1,")*(tilewidth-1))+"1") + "~%s" % name
+        inp = input("Property? (type in -1 for no property): ")
+        if "-1" in inp:
+            ###################################
         tile = tile.split("~")
         tile[0] = tile[0].split(";")
         nt = []
