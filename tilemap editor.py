@@ -28,6 +28,9 @@ def Import_Palette(palette):
 def Save():
     print("SAVING...")
     #print(ftiles)
+    f = open(tfile,"r")
+    prev = f.read()
+    f.close()
     try:
         f = open(tfile,"w")
         if tindex != -1:
@@ -52,7 +55,11 @@ def Save():
         f.close()
         print("SAVED SUCCESSFULLY")
     except Exception:
-        raise Exception("oopsie doopsie errory wahhhhh")
+        f.close()
+        f = open(tfile,"w")
+        f.write(prev)
+        f.close()
+        print("SAVE FAILED, RESTORED PREVIOUS FILE CONTENTS")
 
 def Select():
     global editing,tile,tindex,palette,tile,tfile,tpalette,ftiles
@@ -93,9 +100,13 @@ def Select():
     if tindex == -1:
         name = input("name yo tile: ")
         tile = (((("1,")*(tilewidth-1))+"1;")*(tilewidth-1) + (("1,")*(tilewidth-1))+"1") + "~%s" % name
-        inp = input("Property? (type in -1 for no property): ")
-        if "-1" in inp:
-            ###################################
+        inp = "yeet"
+        while inp != "-1":
+            inp = input("add property (or type -1 to finish)")
+            if inp == "-1":
+                pass
+            else:
+                tile = tile + "~" + inp
         tile = tile.split("~")
         tile[0] = tile[0].split(";")
         nt = []
@@ -118,9 +129,9 @@ tilewidth = 10
 x = 200
 y = 100
 pygame.init()
-
 clock = pygame.time.Clock()
-
+WHITE = (255,255,255)
+BLACK = (0,0,0)
 Select()
 surface = pygame.display.set_mode((x*5,y*5))
 pygame.display.set_caption("tilemap editor version " + version)
@@ -132,6 +143,8 @@ while game:
             if event.key == pygame.K_e:
                 eColour += 1
                 if eColour == len(tpalette):
+                    eColour = 0
+                elif eColour == -1:
                     eColour = 0
             elif event.key == pygame.K_q:
                 eColour -= 1
@@ -151,6 +164,8 @@ while game:
                 tindex = -1
                 Save()
                 editing = False
+            elif event.key == pygame.K_t:
+                eColour = -1
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mouseDown = True
         elif event.type == pygame.MOUSEBUTTONUP:
@@ -163,7 +178,15 @@ while game:
         for ix in range(len(tile[0])):
             for iy in range(len(tile[0][ix])):
                 #print("%s-%s" % (ix,iy))
-                gfxdraw.box(surface,((ix*25,iy*25),(25,25)),tpalette[int(tile[0][ix][iy])])
+                c = int(tile[0][ix][iy])
+                if c == -1:
+                    gfxdraw.box(surface,((ix*25,iy*25),(12,12)),WHITE)
+                    gfxdraw.box(surface,((ix*25+13,iy*25+13),(13,13)),WHITE)
+                    gfxdraw.box(surface,((ix*25+13,iy*25),(12,12)),BLACK)
+                    gfxdraw.box(surface,((ix*25,iy*25+13),(13,13)),BLACK)
+                else:
+                    c = tpalette[c]
+                    gfxdraw.box(surface,((ix*25,iy*25),(25,25)),c)
         gfxdraw.box(surface,((x*5-25,0),(25,25)),tpalette[eColour])
     else:
         Select()
