@@ -34,16 +34,17 @@ def Save():
     try:
         f = open(tfile,"w")
         if tindex != -1:
-            sti = ""
+            sti = "\n"
             for sx in range(tilewidth):
                 sti = sti + str(tile[0][sx][0])
                 for sy in range(1,tilewidth):
                     sti = sti + "," + str(tile[0][sx][sy])
-                sti = sti + ";"
+                if sx != tilewidth-1:
+                    sti = sti + ";\n"
             s = ""
             for p in tile[1:]:
                 s = s + "~" + p
-            sti = sti[:len(sti)-1] + s
+            sti = sti + s
             ftiles[tindex] = sti
         data = ftiles[0]
         for p in ftiles[1:]:
@@ -67,7 +68,7 @@ def Select():
     tfiles = []
     for f in files:
         fio = open(f,"r")
-        fior = fio.read().rstrip().split("#")[0]
+        fior = fio.read().replace("\n","").split("#")[0]
         fio.close()
         if "tilemap" in fior.lower():
             tfiles.append(f)
@@ -124,7 +125,7 @@ def Select():
             nt.append(o.split(","))
         tile[0] = nt
     editing = True
-    
+print("\n\n\noh\nhai".replace("\n",""))
 tilewidth = 10
 x = 200
 y = 100
