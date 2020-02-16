@@ -41,7 +41,7 @@ def Save():
                     sti = sti + "," + str(tile[0][sx][sy])
                 if sx != tilewidth-1:
                     sti = sti + ";\n"
-            s = ""
+            s = "\n"
             for p in tile[1:]:
                 s = s + "~" + p
             sti = sti + s
