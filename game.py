@@ -20,6 +20,8 @@ py = 50
 player_sprite = []
 screenwidth = 5
 ts = 2
+surface = None
+clock = None
 # FUNCTIONS
 def Init_Palettes():
     files = glob("Mods/*/*.txt")
@@ -67,6 +69,7 @@ def Init_Tilemaps():
                 #print(tilemaps[tia])
         fo.close()
 def Init():
+    global surface,clock
     Init_Palettes()
     Init_Tilemaps()
     # create a quick map
@@ -170,15 +173,7 @@ while game:
                 c = palettes[palette_index][player_sprite[drox][droy]]
                 p = (((locpx*tilewidth)+drox)*ts,((locpy*tilewidth)+droy)*ts)
                 gfxdraw.box(surface,(p,size),c)
-    """                                            
-    for ix in range(0,x):
-        xc = ix//tilewidth
-        for iy in range(0,y):
-            yc = iy//tilewidth
-            c = palettes[0][tilemaps[0][1][mapl[xc][yc]][ix%tilewidth][iy%tilewidth]]
-            gfxdraw.box(surface,((ix*2,iy*2),(2,2)),c)
-    """
-    pygame.display.flip()
-    clock.tick(60)
+    pygame.display.flip() # actually update the surface
+    clock.tick(60) # cap the framerate (not usually necessary :/)
 pygame.quit()
-print("PROGRAM ENDED")
+print("bye bye")
