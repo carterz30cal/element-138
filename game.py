@@ -19,6 +19,7 @@ px = 50
 py = 50
 player_sprite = []
 screenwidth = 5
+ts = 2
 # FUNCTIONS
 def Init_Palettes():
     files = glob("Mods/*/*.txt")
@@ -73,7 +74,9 @@ def Init():
         mapl.append([])
         for iy in range(0,y):
             mapl[ix].append(rint(0,4))
-
+    surface = pygame.display.set_mode((x*5,y*5))
+    pygame.display.set_caption("element-138 (version %s) " %(version))
+    clock = pygame.time.Clock()
 def Get_CameraBounds():
     sw = screenwidth
     # returns a tuple of bounds e.g. (0,10,0,10)
@@ -102,12 +105,10 @@ def Tile_HasProperty(x,y,prop):
 
 # GAMEPLAY LOOP
 pygame.init()
-surface = pygame.display.set_mode((x*5,y*5))
-pygame.display.set_caption("element-138 (version %s) " %(version))
-clock = pygame.time.Clock()
+
 Init() # init all mods and crap
 game = True
-ts = 2
+
 movex = 0
 movey = 0
 movec = 0
