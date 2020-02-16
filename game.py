@@ -6,7 +6,7 @@ from random import randint as rint
 from glob import glob
 import time
 import noise
-help(noise)
+
 # VARIABLES
 x = 100
 y = 100
@@ -22,11 +22,11 @@ px = 50
 py = 50
 player_sprite = []
 screenwidth = 5
-ts = 2
+ts = 4
 surface = None
 clock = None
-perlinfreq = 64
-perlin_octaves = 2
+perlinfreq = 32
+perlin_octaves = 4
 # FUNCTIONS
 def Init_Palettes():
     files = glob("Mods/*/*.txt")
@@ -74,6 +74,7 @@ def Init_Tilemaps():
                     player_sprite = tilemaps[tia][1][tian]
                 #print(tilemaps[tia])
 def Init_Tilemap(file):
+    global player_sprite
     fo = open("Mods/" + file,"r")
     fr = fo.read().split("#")
     fo.close()
@@ -89,7 +90,7 @@ def Init_Tilemap(file):
         tilemap_properties[tia].append([])
         for prop in twave[1:]:
             tilemap_properties[tia][tian].append(prop)
-            if prop == "player" and prop != twave[1]:
+            if prop == "player":
                 player = True
         for tl in twave[0].split(";"):
             tilemaps[tia][1][tian].append([])
@@ -108,7 +109,7 @@ def Init_Worldgens():
             worldgens.append([fr[1],fr[2:]])
 def Init():
     global surface,clock
-    Init_Palettes()]
+    Init_Palettes()
     Init_Worldgens()
     # map generation
     WorldGen_Generate(0)
@@ -117,28 +118,38 @@ def Init():
     clock = pygame.time.Clock()
 def WorldGen_Generate(index):
     global tilemap_index,mapl
-    wg = worldgens[index][2]
-    Init_Tilemap(wg[0])
+    wg = worldgens[index][1]
+    Init_Tilemap(wg[0].split(":")[1])
     tilemap_index = len(tilemaps)-1
     checks = []
     for prop in wg[1:]:
         pros = prop.lower().split(":")
-        tind = pros[2].lower()
-        for t in range(len(tilemap_properties[tilemap_index])):
-            if tilemap_properties[t][0].lower() == pros[2]:
-                tind = t
-                break
+        
         if pros[0] == "fill":
-            checks.append([(0,1),pros[1]])
+            tind = pros[1].lower()
+            for t in range(len(tilemap_properties[tilemap_index])):
+                if tilemap_properties[tilemap_index][t][0].lower() == pros[1]:
+                    tind = t
+                    break
+            checks.append([(0,1),tind])
         elif pros[0] == "perlin":
             rage = pros[1].split(",")
-            checks.append([(rage[0],rage[1]),pros[2]])
+            tind = pros[2].lower()
+            for t in range(len(tilemap_properties[tilemap_index])):
+                if tilemap_properties[tilemap_index][t][0].lower() == pros[2]:
+                    tind = t
+                    break
+            checks.append([(float(rage[0]),float(rage[1])),tind])
     for wx in range(x):
+        mapl.append([])
         for wy in range(y):
-            n = noise.noise2(wx/perlinfreq,wy/perlinfreq,perlin_octaves)
+            n = noise._perlin.noise2(float(wx)/perlinfreq,float(wy)/perlinfreq,perlin_octaves)
+            n = (n+1)/2
+            #print(n)
             for c in checks:
                 if n >= c[0][0] and n < c[0][1]:
-                    mapl[wx][wy] = c[1]
+                    #print(c[1])
+                    mapl[wx].append(c[1])
                     break
 def Get_CameraBounds():
     sw = screenwidth
@@ -220,6 +231,9 @@ while game:
             adjy = ty - (bounds[2])
             for ix in range(0,tilewidth):
                 for iy in range(0,tilewidth):
+                    #print(mapl[tx])
+                    #print(tilemaps[tilemap_index][1][mapl[tx][ty]][ix][iy])
+                    #print(palettes[palette_index][tilemaps[tilemap_index][1][mapl[tx][ty]][ix][iy]])
                     c = palettes[palette_index][tilemaps[tilemap_index][1][mapl[tx][ty]][ix][iy]]
                     p = (((adjx*tilewidth)+ix)*ts,((adjy*tilewidth)+iy)*ts)
                     gfxdraw.box(surface,(p,(size)),c)
