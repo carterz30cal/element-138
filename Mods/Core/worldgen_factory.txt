@@ -1,0 +1,1 @@
+worldgen#tilemap:tilemap_factory.txt#perlin:0,0.3:liquid_water#perlin:0.3,0.4:os_sand1#perlin:0.4,1:os_grass1
