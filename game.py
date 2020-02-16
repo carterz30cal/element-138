@@ -26,7 +26,6 @@ ts = 4
 surface = None
 clock = None
 perlinfreq = 32
-perlin_octaves = 4
 # FUNCTIONS
 def Init_Palettes():
     files = glob("Mods/*/*.txt")
@@ -122,35 +121,68 @@ def WorldGen_Generate(index):
     Init_Tilemap(wg[0].split(":")[1])
     tilemap_index = len(tilemaps)-1
     checks = []
+    octaves = 4
+    buildings = 10
+    building_wall = 0
+    building_floor = 0
+    building_door = 0
+    buildingmap = []
     for prop in wg[1:]:
         pros = prop.lower().split(":")
-        
         if pros[0] == "fill":
-            tind = pros[1].lower()
-            for t in range(len(tilemap_properties[tilemap_index])):
-                if tilemap_properties[tilemap_index][t][0].lower() == pros[1]:
-                    tind = t
-                    break
-            checks.append([(0,1),tind])
+            checks.append([(0,1),Get_IndexFromName(pros[1])])
         elif pros[0] == "perlin":
             rage = pros[1].split(",")
-            tind = pros[2].lower()
-            for t in range(len(tilemap_properties[tilemap_index])):
-                if tilemap_properties[tilemap_index][t][0].lower() == pros[2]:
-                    tind = t
-                    break
-            checks.append([(float(rage[0]),float(rage[1])),tind])
+            checks.append([(float(rage[0]),float(rage[1])),Get_IndexFromName(pros[2])])
+        elif pros[0] == "octaves":
+            octaves = int(pros[1])
+        elif pros[0] == "building_count":
+            buildings = int(pros[1])
+        elif pros[0] == "building_wall":
+            building_wall = Get_IndexFromName(pros[1])
+        elif pros[0] == "building_floor":
+            building_floor = Get_IndexFromName(pros[1])
+        elif pros[0] == "building_door":
+            building_door = Get_IndexFromName(pros[1])
     for wx in range(x):
         mapl.append([])
+        buildingmap.append([])
         for wy in range(y):
-            n = noise._perlin.noise2(float(wx)/perlinfreq,float(wy)/perlinfreq,perlin_octaves)
+            n = noise._perlin.noise2(float(wx)/perlinfreq,float(wy)/perlinfreq,octaves)
             n = (n+1)/2
             #print(n)
             for c in checks:
                 if n >= c[0][0] and n < c[0][1]:
                     #print(c[1])
                     mapl[wx].append(c[1])
+                    buildingmap[wx].append(False)
                     break
+    attempts = 0
+    while buildings > 0 and attempts < 100:
+        attempts += 1
+        rx = rint(0,x-8)
+        ry = rint(0,y-8)
+        sizex = rint(4,8)
+        sizey = rint(4,8)
+        
+        build = False
+        if not Tile_HasProperty(rx,ry,"impassable") and not buildingmap[rx][ry]:
+            build = True
+            for testx in range(rx,rx+sizex+1):
+                for testy in range(ry,ry+sizey+1):
+                    if buildingmap[rx][ry]:
+                        build = False
+        if build:
+            buildings -= 1
+            for buildx in range(rx,rx+sizex+1):
+                for buildy in range(ry,ry+sizey+1):
+                    buildingmap[buildx][buildy] = True
+                    mapl[buildx][buildy] = building_floor
+def Get_IndexFromName(name):
+    tind = name.lower()
+    for t in range(len(tilemap_properties[tilemap_index])):
+        if tilemap_properties[tilemap_index][t][0].lower() == name:
+            return t
 def Get_CameraBounds():
     sw = screenwidth
     # returns a tuple of bounds e.g. (0,10,0,10)
@@ -222,8 +254,6 @@ while game:
             px -= movex
             py -= movey
     bounds = Get_CameraBounds()
-    
-    
     size = (ts,ts)
     for tx in range(bounds[0],bounds[1]):
         adjx = tx - (bounds[0])
@@ -231,9 +261,6 @@ while game:
             adjy = ty - (bounds[2])
             for ix in range(0,tilewidth):
                 for iy in range(0,tilewidth):
-                    #print(mapl[tx])
-                    #print(tilemaps[tilemap_index][1][mapl[tx][ty]][ix][iy])
-                    #print(palettes[palette_index][tilemaps[tilemap_index][1][mapl[tx][ty]][ix][iy]])
                     c = palettes[palette_index][tilemaps[tilemap_index][1][mapl[tx][ty]][ix][iy]]
                     p = (((adjx*tilewidth)+ix)*ts,((adjy*tilewidth)+iy)*ts)
                     gfxdraw.box(surface,(p,(size)),c)
