@@ -5,6 +5,8 @@ from pygame import gfxdraw
 from random import randint as rint
 from glob import glob
 import time
+import noise
+help(noise)
 # VARIABLES
 x = 100
 y = 100
@@ -13,6 +15,7 @@ palette_index = 0
 tilemaps = []
 tilemap_index = 0
 tilemap_properties = []
+worldgens = []
 mapl = []
 tilewidth = 10
 px = 50
@@ -22,13 +25,15 @@ screenwidth = 5
 ts = 2
 surface = None
 clock = None
+perlinfreq = 64
+perlin_octaves = 2
 # FUNCTIONS
 def Init_Palettes():
     files = glob("Mods/*/*.txt")
     for f in files:
         fo = open(f,"r")
         fr = fo.read().split("#")
-        if "palette" in fr[0]:
+        if "palette" in fr[0].lower():
             palettes.append([])
             fr = fr[1].rstrip().split("/")
             pai = len(palettes)-1
@@ -42,7 +47,8 @@ def Init_Tilemaps():
     for f in files:
         fo = open(f,"r")
         fr = fo.read().split("#")
-        if "tilemap" in fr[0]:
+        fo.close()
+        if "tilemap" in fr[0].lower():
             tilemaps.append([fr[1],[]])
             tilemap_properties.append([])
             fr = fr[2].rstrip().split("/")
@@ -67,19 +73,73 @@ def Init_Tilemaps():
                 if player:
                     player_sprite = tilemaps[tia][1][tian]
                 #print(tilemaps[tia])
+def Init_Tilemap(file):
+    fo = open("Mods/" + file,"r")
+    fr = fo.read().split("#")
+    fo.close()
+    tilemaps.append([fr[1],[]])
+    tilemap_properties.append([])
+    fr = fr[2].rstrip().split("/")
+    tia = len(tilemaps)-1
+    for t in fr:
+        tilemaps[tia][1].append([])
+        tian = len(tilemaps[tia][1])-1
+        twave = t.split("~")
+        player = False
+        tilemap_properties[tia].append([])
+        for prop in twave[1:]:
+            tilemap_properties[tia][tian].append(prop)
+            if prop == "player" and prop != twave[1]:
+                player = True
+        for tl in twave[0].split(";"):
+            tilemaps[tia][1][tian].append([])
+            tiam = len(tilemaps[tia][1][tian])-1
+            for p in tl.split(","):
+                tilemaps[tia][1][tian][tiam].append(int(p))
+        if player:
+            player_sprite = tilemaps[tia][1][tian]
+def Init_Worldgens():
+    files = glob("Mods/*/*.txt")
+    for f in files:
+        fo = open(f,"r")
+        fr = fo.read().split("#")
         fo.close()
+        if "worldgen" in fr[0].lower():
+            worldgens.append([fr[1],fr[2:]])
 def Init():
     global surface,clock
-    Init_Palettes()
-    Init_Tilemaps()
-    # create a quick map
-    for ix in range(0,x):
-        mapl.append([])
-        for iy in range(0,y):
-            mapl[ix].append(rint(0,4))
+    Init_Palettes()]
+    Init_Worldgens()
+    # map generation
+    WorldGen_Generate(0)
     surface = pygame.display.set_mode((x*5,y*5))
     pygame.display.set_caption("element-138 (version %s) " %(version))
     clock = pygame.time.Clock()
+def WorldGen_Generate(index):
+    global tilemap_index,mapl
+    wg = worldgens[index][2]
+    Init_Tilemap(wg[0])
+    tilemap_index = len(tilemaps)-1
+    checks = []
+    for prop in wg[1:]:
+        pros = prop.lower().split(":")
+        tind = pros[2].lower()
+        for t in range(len(tilemap_properties[tilemap_index])):
+            if tilemap_properties[t][0].lower() == pros[2]:
+                tind = t
+                break
+        if pros[0] == "fill":
+            checks.append([(0,1),pros[1]])
+        elif pros[0] == "perlin":
+            rage = pros[1].split(",")
+            checks.append([(rage[0],rage[1]),pros[2]])
+    for wx in range(x):
+        for wy in range(y):
+            n = noise.noise2(wx/perlinfreq,wy/perlinfreq,perlin_octaves)
+            for c in checks:
+                if n >= c[0][0] and n < c[0][1]:
+                    mapl[wx][wy] = c[1]
+                    break
 def Get_CameraBounds():
     sw = screenwidth
     # returns a tuple of bounds e.g. (0,10,0,10)
