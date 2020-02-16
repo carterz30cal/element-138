@@ -8,6 +8,8 @@ import time
 import noise
 
 # VARIABLES
+screenx = 1000
+screeny = 500
 x = 100
 y = 100
 palettes = []
@@ -112,9 +114,26 @@ def Init():
     Init_Worldgens()
     # map generation
     WorldGen_Generate(0)
-    surface = pygame.display.set_mode((x*5,y*5))
+    surface = pygame.display.set_mode((screenx,screeny))
     pygame.display.set_caption("element-138 (version %s) " %(version))
     clock = pygame.time.Clock()
+def WorldGen_DoorPos(roomsize):
+    dx = rint(1,roomsize[0]-1)
+    dy = rint(1,roomsize[1]-1)
+    if dy < roomsize[1]-dy:
+        dy = 0
+    else:
+        dy = roomsize[1]-1
+    if dx == dy:
+        return WorldGen_DoorPos(roomsize)
+    elif dx == roomsize[0]-1 and dy == 0:
+        return WorldGen_DoorPos(roomsize)
+    elif dx == 0 and dy == roomsize[1]-1:
+        return WorldGen_DoorPos(roomsize)
+    elif dx == roomsize[0]-1 and dy == roomsize[1]-1:
+        return WorldGen_DoorPos(roomsize)
+    else:
+        return (dx,dy)
 def WorldGen_Generate(index):
     global tilemap_index,mapl
     wg = worldgens[index][1]
@@ -158,26 +177,35 @@ def WorldGen_Generate(index):
                     buildingmap[wx].append(False)
                     break
     attempts = 0
-    while buildings > 0 and attempts < 100:
+    while buildings > 0 and attempts < 1000:
         attempts += 1
         rx = rint(0,x-8)
         ry = rint(0,y-8)
         sizex = rint(4,8)
         sizey = rint(4,8)
-        
         build = False
         if not Tile_HasProperty(rx,ry,"impassable") and not buildingmap[rx][ry]:
             build = True
-            for testx in range(rx,rx+sizex+1):
-                for testy in range(ry,ry+sizey+1):
-                    if buildingmap[rx][ry]:
+            for testx in range(rx,rx+sizex):
+                for testy in range(ry,ry+sizey):
+                    if buildingmap[testx][testy]:
                         build = False
         if build:
+            doorpos = WorldGen_DoorPos((sizex,sizey))
+            print("made a building")
             buildings -= 1
-            for buildx in range(rx,rx+sizex+1):
-                for buildy in range(ry,ry+sizey+1):
+            for buildx in range(rx,rx+sizex):
+                locx = buildx-rx
+                for buildy in range(ry,ry+sizey):
+                    locy = buildy-ry
                     buildingmap[buildx][buildy] = True
-                    mapl[buildx][buildy] = building_floor
+                    if locx == doorpos[0] and locy == doorpos[1]:
+                        print("yuuuup got here dx-%s dy-%s" %(doorpos[0],doorpos[1]))
+                        mapl[buildx][buildy] = building_door
+                    elif locx == 0 or locx == sizex-1 or locy == 0 or locy == sizey-1:
+                        mapl[buildx][buildy] = building_wall
+                    else:
+                        mapl[buildx][buildy] = building_floor
 def Get_IndexFromName(name):
     tind = name.lower()
     for t in range(len(tilemap_properties[tilemap_index])):
