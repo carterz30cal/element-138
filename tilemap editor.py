@@ -125,7 +125,7 @@ def Select():
             nt.append(o.split(","))
         tile[0] = nt
     editing = True
-print("\n\n\noh\nhai".replace("\n",""))
+
 tilewidth = 10
 x = 200
 y = 100
