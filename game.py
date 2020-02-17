@@ -6,10 +6,16 @@ from random import randint as rint
 from random import choice
 from glob import glob
 from math import floor
+import heapq
 import time
 import noise
 
 # VARIABLES
+WHITE = (255,255,255)
+BLACK = (0,0,0)
+RED = (255,0,0)
+GREEN = (0,255,0)
+BLUE = (0,0,255)
 screenx = 1000
 screeny = 500
 x = 100
@@ -25,7 +31,7 @@ tilewidth = 10
 px = 50
 py = 50
 player_sprite = []
-player_inventory = [["eggs",4],["sausages",8],["bacon bap",1],["sweets",999]]
+player_inventory = [["Cardboard Sword",1],["Burger",7],["Burger",8]]
 screenwidth = 5
 ts = 4
 surface = None
@@ -35,7 +41,90 @@ font_index = -1
 font_file = "Core/tilemap_text.txt"
 font_size = 3
 inventoryscroll = 0
+entities = [[3,3,10,5,None,0]] # entity data [x,y,move_cooldown,move_time,path,path_update_cooldown] right now
+path_reset = 5
+movex = 0
+movey = 0
+movec = 0
+movef = 5
+lastmessage = (WHITE,"Great. I have no idea where i am.")
 # FUNCTIONS
+def Entity_Move(e):
+    if e[2] > e[3] and e[4]:
+        e[2] -= e[3]
+        e[0] = e[4][0][0]
+        e[1] = e[4][0][1]
+        e[4].pop(0)
+        e[5] -= 1
+        Entity_Move(e)
+        return True
+    return False
+def Entity_Step():
+    for e in entities:
+        if not e[4] or e[5] == 0:
+            e[4] = Pathfind((e[0],e[1]),(px,py))
+            e[5] = path_reset
+        if e[2] > e[3] and e[4]:
+            Entity_Move(e)
+        e[2] += movef
+def Pathfind(pos,target):
+    # optimisation bit
+    dist = Manhatten(pos,target)
+    if dist > 15:
+        target = ((target[0]+pos[0]//2),(target[1]+pos[1])//2)
+    if Tile_HasProperty(target[0],target[1],"impassable"):
+        return None
+    opens = [pos]
+    cameFrom = []
+    gScore = []
+    fScore = []
+    for pax in range(x):
+        cameFrom.append([])
+        gScore.append([])
+        fScore.append([])
+        for pay in range(y):
+            cameFrom[pax].append((-1,-1))
+            gScore[pax].append(9999999)
+            fScore[pax].append(99999999)
+    gScore[pos[0]][pos[1]] = 0
+    fScore[pos[0]][pos[1]] = Manhatten(pos,target)
+    while len(opens) > 0:
+        c = opens[0]
+        cf = fScore[c[0]][c[1]]
+        for o in opens:
+            of = fScore[o[0]][o[1]]
+            if of < cf:
+                cf = of
+                c = o
+        if c == target:
+            return Construct(cameFrom,c)
+        opens.remove(c)
+        gs = gScore[c[0]][c[1]]
+        for lox in range(c[0]-1,c[0]+2):
+            for loy in range(c[1]-1,c[1]+2):
+                if lox < 0 or lox >= x or loy < 0 or loy >= y:
+                    continue
+                elif (lox == c[0] and loy == c[1]) or Tile_HasProperty(lox,loy,"impassable"):
+                    continue
+                else:
+                    t_gScore = gs + 1
+                    if t_gScore < gScore[lox][loy]:
+                        cameFrom[lox][loy] = c
+                        gScore[lox][loy] = t_gScore
+                        pos = (lox,loy)
+                        fScore[lox][loy] = t_gScore + Manhatten(pos,target)
+                        if pos not in opens:
+                            opens.append(pos)
+    return None
+def Construct(cameFrom,current):
+    path = [current]
+    while cameFrom[current[0]][current[1]] != (-1,-1):
+        path[:0] = [(cameFrom[current[0]][current[1]])]
+        current = path[0]
+    return path[1:]
+def Manhatten(pos,target):
+    return abs(target[0]-pos[0]) + abs(target[1]-pos[0])
+
 def String_ToIndexes(string):
     global font_index
     if font_index == -1:
@@ -48,6 +137,7 @@ def Area_Colour(posx,posy,sizex,sizey,colour):
 def Text(text,colour,posx,posy):
     indexes = String_ToIndexes(text)
     csx = int(floor(posx))
+    posy = int(floor(posy))
     #gfxdraw.box(surface,((csx,posy),(len(indexes)*10*font_size,10*font_size)),(0,0,0))
     for i in range(len(indexes)):
         if indexes[i] == -1:
@@ -163,6 +253,7 @@ def Init():
     surface = pygame.display.set_mode((screenx,screeny),pygame.RESIZABLE)
     pygame.display.set_caption("element-138 (version %s) " %(version))
     clock = pygame.time.Clock()
+    Entity_Step()
 def WorldGen_DoorPos(roomsize):
     dx = rint(1,roomsize[0]-1)
     dy = rint(1,roomsize[1]-1)
@@ -293,17 +384,19 @@ def Tile_HasProperty(x,y,prop):
         if p.lower() == prop.lower():
             return True
     return False
-
+def Item_GetProperty(item,prop):
+    prop = prop.lower()
+    for p in item[2:]:
+        if p.split(":")[0].lower() == prop:
+            return p.split(":")[1]
 # GAMEPLAY LOOP
 pygame.init()
 
 Init() # init all mods and crap
 game = True
 
-movex = 0
-movey = 0
-movec = 0
-movef = 5
+
+#print(Pathfind((0,0),(50,50)))
 while game:
     Area_Colour(0,0,1000,1000,(0,0,0))
     for event in pygame.event.get():
@@ -332,6 +425,7 @@ while game:
                 movey = 0
     movec += 1
     if movec >= movef and (movex != 0 or movey != 0):
+        Entity_Step()
         px += movex
         py += movey
         movec = 0
@@ -367,18 +461,49 @@ while game:
                 c = palettes[palette_index][1][player_sprite[drox][droy]]
                 p = (((locpx*tilewidth)+drox)*ts,((locpy*tilewidth)+droy)*ts)
                 gfxdraw.box(surface,(p,size),c)
+    placeholder = Get_IndexFromName("enemy")
+    enemies = 0
+    for e in entities:
+        #print("%s-%s" %(e[0],e[1]))
+        lex = (e[0] - bounds[0])
+        ley = (e[1] - bounds[2])
+        #print("%s_%s" % (lex,ley))
+        if e[0] >= bounds[0] and e[0] < bounds[1] and e[1] >= bounds[2] and e[1] < bounds[3]:
+            enemies += 1
+            for drax in range(tilewidth):
+                for dray in range(tilewidth):
+                    ne = tilemaps[tilemap_index][1][placeholder][drax][dray]
+                    if ne != -1:
+                        c = palettes[palette_index][1][ne]
+                        p = (((lex*tilewidth)+drax)*ts,((ley*tilewidth)+dray)*ts)
+                        gfxdraw.box(surface,(p,size),c)
+    lastmessage = (GREEN,"i mean, could be worse.")
+    if enemies > 0:
+        if enemies == 1:
+            lastmessage = (RED,"an enemy spotted!")
+        else:
+            lastmessage = (RED,str(enemies) + " enemies spotted!")
     xp_aftermap = ts*(screenwidth+0.5)*tilewidth*2
+    yp_aftermap = ts*(screenwidth+0.5)*tilewidth*2
     Text("Inventory",(255,255,255),xp_aftermap,0)
     ind = 1
-    stitem = inventoryscroll//2
+    stitem = inventoryscroll
     hitem = stitem+4
     if hitem > len(player_inventory)-1:
         hitem = len(player_inventory)-1
-    for item in player_inventory[stitem:stitem+4]:
-        # items are organised as [name,amount]
-        Text(("+ %sx " %item[1]) + item[0],(255,255,255),xp_aftermap,ind*10*font_size)
+    if player_inventory:
+        for item in player_inventory[stitem:stitem+4]:
+            # items are organised as [name,amount]
+            text = ("+ %sx " %item[1]) + item[0]
+            if item[1] == 1:
+                text = "+ " + item[0]
+            Text(text,(255,255,255),xp_aftermap,ind*10*font_size)
+            ind += 1
+    else:
+        Text("- Empty",(255,255,255),xp_aftermap,ind*10*font_size)
         ind += 1
     #Text("hello there",(255,255,255),ts*(screenwidth+0.5)*tilewidth*2,0)
+    Text(lastmessage[1],lastmessage[0],0,yp_aftermap)
     pygame.display.flip() # actually update the surface
     clock.tick(60) # cap the framerate (not usually necessary :/)
 pygame.quit()
