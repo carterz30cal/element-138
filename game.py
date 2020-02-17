@@ -29,7 +29,25 @@ ts = 4
 surface = None
 clock = None
 perlinfreq = 32
+font_index = -1
+font_file = "Core/tilemap_text.txt"
+font_size = 2
 # FUNCTIONS
+def String_ToIndexes(string):
+    global font_index
+    if font_index == -1:
+        Init_Tilemap(font_file)
+        font_index = len(tilemaps)-1
+    indexes = Get_IndexFromNames(string,font_index)
+    return indexes
+def Text(text,colour,posx,posy):
+    indexes = String_ToIndexes(text)
+    for i in range(len(indexes)):
+        tile = tilemaps[font_index][1][indexes[i]]
+        for kx in range(10):
+            for ky in range(10):
+                if tile[kx][ky] != -1:
+                    gfxdraw.box(surface,((posx+(font_size*i*10)+(kx*font_size),posy+(ky*font_size)),(font_size,font_size)),colour)
 def Init_Palettes():
     files = glob("Mods/*/*.txt")
     for f in files:
@@ -37,7 +55,7 @@ def Init_Palettes():
         fr = fo.read().split("#")
         if "palette" in fr[0].lower():
             palettes.append([f,[]])
-            fr = fr[1].rstrip().split("`")
+            fr = fr[1].rstrip().split("/")
             pai = len(palettes)-1
             for i in fr:
                 cs = i.split(",")
@@ -215,15 +233,15 @@ def WorldGen_Generate(index):
                         mapl[buildx][buildy] = building_wall
                     else:
                         mapl[buildx][buildy] = building_floor
-def Get_IndexFromName(name):
-    for t in range(len(tilemap_properties[tilemap_index])):
-        if tilemap_properties[tilemap_index][t][0].lower() == name:
+def Get_IndexFromName(name,index=tilemap_index):
+    for t in range(len(tilemap_properties[index])):
+        if tilemap_properties[index][t][0].lower() == name:
             return t
-def Get_IndexFromNames(names):
+def Get_IndexFromNames(names,index=tilemap_index):
     indexes = []
     for name in names:
-        for t in range(len(tilemap_properties[tilemap_index])):
-            if tilemap_properties[tilemap_index][t][0].lower() == name:
+        for t in range(len(tilemap_properties[index])):
+            if tilemap_properties[index][t][0].lower() == name:
                 indexes.append(t)
                 break
     return indexes
@@ -318,6 +336,7 @@ while game:
                 c = palettes[palette_index][1][player_sprite[drox][droy]]
                 p = (((locpx*tilewidth)+drox)*ts,((locpy*tilewidth)+droy)*ts)
                 gfxdraw.box(surface,(p,size),c)
+    Text("abcdefghijklmnopqrstuvwxyz1234567890-+*/",(255,255,255),ts*screenwidth*tilewidth,0)
     pygame.display.flip() # actually update the surface
     clock.tick(60) # cap the framerate (not usually necessary :/)
 pygame.quit()
