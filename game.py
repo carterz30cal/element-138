@@ -25,6 +25,7 @@ tilewidth = 10
 px = 50
 py = 50
 player_sprite = []
+player_inventory = [["eggs",4],["sausages",8],["bacon bap",1]]
 screenwidth = 5
 ts = 4
 surface = None
@@ -39,7 +40,7 @@ def String_ToIndexes(string):
     if font_index == -1:
         Init_Tilemap(font_file)
         font_index = len(tilemaps)-1
-    indexes = Get_IndexFromNames(string,font_index)
+    indexes = Get_IndexFromNames(string.lower(),font_index)
     return indexes
 def Text(text,colour,posx,posy):
     indexes = String_ToIndexes(text)
@@ -354,7 +355,14 @@ while game:
                 c = palettes[palette_index][1][player_sprite[drox][droy]]
                 p = (((locpx*tilewidth)+drox)*ts,((locpy*tilewidth)+droy)*ts)
                 gfxdraw.box(surface,(p,size),c)
-    Text("hello there",(255,255,255),ts*(screenwidth+0.5)*tilewidth*2,0)
+    xp_aftermap = ts*(screenwidth+0.5)*tilewidth*2
+    Text("Inventory",(255,255,255),xp_aftermap,0)
+    ind = 1
+    for item in player_inventory:
+        # items are organised as [name,amount]
+        Text(("+ %sx " %item[1]) + item[0],(255,255,255),xp_aftermap,ind*10*font_size)
+        ind += 1
+    #Text("hello there",(255,255,255),ts*(screenwidth+0.5)*tilewidth*2,0)
     pygame.display.flip() # actually update the surface
     clock.tick(60) # cap the framerate (not usually necessary :/)
 pygame.quit()
