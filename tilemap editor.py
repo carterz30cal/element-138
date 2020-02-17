@@ -36,9 +36,9 @@ def Save():
         if tindex != -1:
             sti = "\n"
             for sx in range(tilewidth):
-                sti = sti + str(tile[0][sx][0])
+                sti = sti + str(tile[0][sx][0]).replace("\n","")
                 for sy in range(1,tilewidth):
-                    sti = sti + "," + str(tile[0][sx][sy])
+                    sti = sti + "," + str(tile[0][sx][sy]).replace("\n","")
                 if sx != tilewidth-1:
                     sti = sti + ";\n"
             s = "\n"
@@ -50,7 +50,7 @@ def Save():
         for p in ftiles[1:]:
             #print(p)
             data = data + "`" + p
-        dataf = "tilemap#%s#%s" % (palette,data)
+        dataf = "tilemap#%s#%s" % (palette.rstrip(),data)
         #print(dataf)
         f.write(dataf)
         f.close()
@@ -61,7 +61,6 @@ def Save():
         f.write(prev)
         f.close()
         print("SAVE FAILED, RESTORED PREVIOUS FILE CONTENTS")
-
 def Select():
     global editing,tile,tindex,palette,tile,tfile,tpalette,ftiles
     files = glob("Mods/*/*.txt")

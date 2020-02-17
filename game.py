@@ -354,7 +354,7 @@ while game:
                 c = palettes[palette_index][1][player_sprite[drox][droy]]
                 p = (((locpx*tilewidth)+drox)*ts,((locpy*tilewidth)+droy)*ts)
                 gfxdraw.box(surface,(p,size),c)
-    Text("hello there my name is carter",(255,255,255),ts*(screenwidth+0.5)*tilewidth*2,0)
+    Text("hello there",(255,255,255),ts*(screenwidth+0.5)*tilewidth*2,0)
     pygame.display.flip() # actually update the surface
     clock.tick(60) # cap the framerate (not usually necessary :/)
 pygame.quit()
