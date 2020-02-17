@@ -2,7 +2,7 @@ import pygame
 from pygame import gfxdraw
 from glob import glob
 
-version = "h-1"
+version = "h-2"
 game = True
 mouseDown = False
 ftiles = []
@@ -100,7 +100,10 @@ def Select():
     tindex = int(input("Select a tile or type 0 to make a new one"))-1
     if tindex == -1:
         name = input("name yo tile: ")
-        tile = (((("1,")*(tilewidth-1))+"1;")*(tilewidth-1) + (("1,")*(tilewidth-1))+"1") + "~%s" % name
+        start = input("fill with (index): ")
+        comma = start + ","
+        semi = start + ";"
+        tile = ((((comma)*(tilewidth-1))+semi)*(tilewidth-1) + ((comma)*(tilewidth-1))+start) + "~%s" % name
         inp = "yeet"
         while inp != "-1":
             inp = input("add property (or type -1 to finish)")
