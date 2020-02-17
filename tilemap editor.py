@@ -191,7 +191,17 @@ while game:
                 else:
                     c = tpalette[c]
                     gfxdraw.box(surface,((ix*25,iy*25),(25,25)),c)
-        gfxdraw.box(surface,((x*5-25,0),(25,25)),tpalette[eColour])
+        for ix in range(11):
+            gfxdraw.box(surface,((ix*25,0),(2,250)),(255,0,0))
+        for iy in range(11):
+            gfxdraw.box(surface,((0,iy*25),(250,2)),(255,0,0))
+        if eColour == -1:
+            gfxdraw.box(surface,((x*5-25,0),(12,12)),WHITE)
+            gfxdraw.box(surface,((x*5-25+13,13),(13,13)),WHITE)
+            gfxdraw.box(surface,((x*5-25+13,0),(12,12)),BLACK)
+            gfxdraw.box(surface,((x*5-25,13),(13,13)),BLACK)
+        else:
+            gfxdraw.box(surface,((x*5-25,0),(25,25)),tpalette[eColour])
     else:
         Select()
     pygame.display.flip()
