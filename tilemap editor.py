@@ -49,7 +49,7 @@ def Save():
         data = ftiles[0]
         for p in ftiles[1:]:
             #print(p)
-            data = data + "/" + p
+            data = data + "`" + p
         dataf = "tilemap#%s#%s" % (palette,data)
         #print(dataf)
         f.write(dataf)
@@ -93,7 +93,7 @@ def Select():
         palette = filer.split("#")[1]
         #print(palette)
         Import_Palette(palette)
-        ftiles = filer.split("#")[2].split("/")
+        ftiles = filer.split("#")[2].split("`")
     print("-- tiles (%d) --" % len(ftiles))
     for ti in range(len(ftiles)):
         print(str(ti+1) + " - " + ftiles[ti].split("~")[1])
