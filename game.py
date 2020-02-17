@@ -25,7 +25,7 @@ tilewidth = 10
 px = 50
 py = 50
 player_sprite = []
-player_inventory = [["eggs",4],["sausages",8],["bacon bap",1]]
+player_inventory = [["eggs",4],["sausages",8],["bacon bap",1],["sweets",999]]
 screenwidth = 5
 ts = 4
 surface = None
@@ -34,6 +34,7 @@ perlinfreq = 32
 font_index = -1
 font_file = "Core/tilemap_text.txt"
 font_size = 3
+inventoryscroll = 0
 # FUNCTIONS
 def String_ToIndexes(string):
     global font_index
@@ -42,9 +43,12 @@ def String_ToIndexes(string):
         font_index = len(tilemaps)-1
     indexes = Get_IndexFromNames(string.lower(),font_index)
     return indexes
+def Area_Colour(posx,posy,sizex,sizey,colour):
+    gfxdraw.box(surface,((posx,posy),(sizex,sizey)),colour)
 def Text(text,colour,posx,posy):
     indexes = String_ToIndexes(text)
     csx = int(floor(posx))
+    #gfxdraw.box(surface,((csx,posy),(len(indexes)*10*font_size,10*font_size)),(0,0,0))
     for i in range(len(indexes)):
         if indexes[i] == -1:
             csx += 2*font_size
@@ -156,7 +160,7 @@ def Init():
     Init_Worldgens()
     # map generation
     WorldGen_Generate(0)
-    surface = pygame.display.set_mode((screenx,screeny))
+    surface = pygame.display.set_mode((screenx,screeny),pygame.RESIZABLE)
     pygame.display.set_caption("element-138 (version %s) " %(version))
     clock = pygame.time.Clock()
 def WorldGen_DoorPos(roomsize):
@@ -301,6 +305,7 @@ movey = 0
 movec = 0
 movef = 5
 while game:
+    Area_Colour(0,0,1000,1000,(0,0,0))
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             game = False
@@ -313,6 +318,13 @@ while game:
                 movey = -1
             elif event.key == pygame.K_s:
                 movey = 1
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            mpos = pygame.mouse.get_pos()
+            if mpos[0] > ts*(screenwidth+0.5)*tilewidth*2 and mpos[1] < font_size*10*5:
+                if event.button == 4 and inventoryscroll > 0:
+                    inventoryscroll -= 1
+                elif event.button == 5:
+                    inventoryscroll += 1
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_d or event.key == pygame.K_a:
                 movex = 0
@@ -358,7 +370,11 @@ while game:
     xp_aftermap = ts*(screenwidth+0.5)*tilewidth*2
     Text("Inventory",(255,255,255),xp_aftermap,0)
     ind = 1
-    for item in player_inventory:
+    stitem = inventoryscroll//2
+    hitem = stitem+4
+    if hitem > len(player_inventory)-1:
+        hitem = len(player_inventory)-1
+    for item in player_inventory[stitem:stitem+4]:
         # items are organised as [name,amount]
         Text(("+ %sx " %item[1]) + item[0],(255,255,255),xp_aftermap,ind*10*font_size)
         ind += 1
