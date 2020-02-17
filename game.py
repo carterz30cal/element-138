@@ -36,12 +36,12 @@ def Init_Palettes():
         fo = open(f,"r")
         fr = fo.read().split("#")
         if "palette" in fr[0].lower():
-            palettes.append([])
+            palettes.append([f,[]])
             fr = fr[1].rstrip().split("/")
             pai = len(palettes)-1
             for i in fr:
                 cs = i.split(",")
-                palettes[pai].append((int(cs[0]),int(cs[1]),int(cs[2])))
+                palettes[pai][1].append((int(cs[0]),int(cs[1]),int(cs[2])))
         fo.close()
 def Init_Tilemaps():
     global player_sprite
@@ -76,10 +76,17 @@ def Init_Tilemaps():
                     player_sprite = tilemaps[tia][1][tian]
                 #print(tilemaps[tia])
 def Init_Tilemap(file):
-    global player_sprite
+    global player_sprite,palette_index
     fo = open("Mods/" + file,"r")
     fr = fo.read().split("#")
     fo.close()
+    index = -1
+    for p in range(len(palettes)):
+        if palettes[p][0] == fr[1]:
+            index = p
+    if index == -1:
+        pass #Init_Palette(). Shouldn't ever actually occur unless file is in a weird place or subfolder.
+    palette_index = index
     tilemaps.append([fr[1],[]])
     tilemap_properties.append([])
     fr = fr[2].rstrip().split("/")
@@ -298,7 +305,7 @@ while game:
             adjy = ty - (bounds[2])
             for ix in range(0,tilewidth):
                 for iy in range(0,tilewidth):
-                    c = palettes[palette_index][tilemaps[tilemap_index][1][mapl[tx][ty]][ix][iy]]
+                    c = palettes[palette_index][1][tilemaps[tilemap_index][1][mapl[tx][ty]][ix][iy]]
                     p = (((adjx*tilewidth)+ix)*ts,((adjy*tilewidth)+iy)*ts)
                     gfxdraw.box(surface,(p,(size)),c)
     locpx = px - bounds[0]
@@ -308,7 +315,7 @@ while game:
     for drox in range(0,tilewidth):
         for droy in range(0,tilewidth):
             if player_sprite[drox][droy] != -1:
-                c = palettes[palette_index][player_sprite[drox][droy]]
+                c = palettes[palette_index][1][player_sprite[drox][droy]]
                 p = (((locpx*tilewidth)+drox)*ts,((locpy*tilewidth)+droy)*ts)
                 gfxdraw.box(surface,(p,size),c)
     pygame.display.flip() # actually update the surface
