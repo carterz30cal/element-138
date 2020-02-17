@@ -188,8 +188,8 @@ def WorldGen_Generate(index):
     attempts = 0
     while buildings > 0 and attempts < 1000:
         attempts += 1
-        rx = rint(0,x-8)
-        ry = rint(0,y-8)
+        rx = rint(0,x-10)
+        ry = rint(0,y-10)
         sizex = rint(5,10)
         sizey = rint(5,10)
         build = False
