@@ -53,7 +53,7 @@ def Init_Tilemaps():
         if "tilemap" in fr[0].lower():
             tilemaps.append([fr[1],[]])
             tilemap_properties.append([])
-            fr = fr[2].rstrip().split("\")
+            fr = fr[2].rstrip().split("/")
             tia = len(tilemaps)-1
             #tilemaps_properties[tia].append(fr[1:])
             for t in fr:
@@ -89,7 +89,7 @@ def Init_Tilemap(file):
     palette_index = index
     tilemaps.append([fr[1],[]])
     tilemap_properties.append([])
-    fr = fr[2].rstrip().split("\")
+    fr = fr[2].rstrip().split("/")
     tia = len(tilemaps)-1
     for t in fr:
         tilemaps[tia][1].append([])
