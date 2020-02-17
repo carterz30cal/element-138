@@ -75,9 +75,9 @@ def Select():
     print("-- tilemaps (%d)" % len(tfiles))
     for t in range(len(tfiles)):
         print(str(t+1) + " - " + tfiles[t])
-    file = int(input("Select a file (or type 0 to make a new file): "))-1
+    t = int(input("Select a file (or type 0 to make a new file): "))
     filer = ""
-    if file == -1:
+    if t == -1:
         tfile = input("Please make a new file (with folder path): ")
         file = open(tfile,"w")
         palette = input("File path for palette: ")
