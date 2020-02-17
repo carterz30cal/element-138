@@ -1,1 +1,1 @@
-worldgen#factory#tilemap:Core/tilemap_factory.txt#perlin:0,0.35:liquid_water#perlin:0.35,0.4:os_sand1#perlin:0.4,1:os_grass1,os_grass2#octaves:4#building_count:20#building_wall:imp_factorywall#building_floor:is_factorytile#building_door:is_factorydoor
+worldgen#factory#tilemap:Core/tilemap_factory.txt#perlin:0,0.35:liquid_water#perlin:0.35,0.4:os_sand1,os_sand2,os_sand3#perlin:0.4,1:os_grass1,os_grass2#octaves:4#building_count:20#building_wall:imp_factorywall#building_floor:is_factorytile#building_door:is_factorydoor
