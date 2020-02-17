@@ -5,6 +5,7 @@ from pygame import gfxdraw
 from random import randint as rint
 from random import choice
 from glob import glob
+from math import floor
 import time
 import noise
 
