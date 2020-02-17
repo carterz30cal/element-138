@@ -42,12 +42,25 @@ def String_ToIndexes(string):
     return indexes
 def Text(text,colour,posx,posy):
     indexes = String_ToIndexes(text)
+    csx = int(floor(posx))
     for i in range(len(indexes)):
         tile = tilemaps[font_index][1][indexes[i]]
-        for kx in range(10):
-            for ky in range(10):
+        highest = 0
+        for ky in range(10):
+            started = False
+            sx = 0
+            lpx = 0
+            for kx in range(10):
                 if tile[kx][ky] != -1:
-                    gfxdraw.box(surface,((posx+(font_size*i*10)+(kx*font_size),posy+(ky*font_size)),(font_size,font_size)),colour)
+                    if not started:
+                        started = True
+                        sx = kx
+                    else:
+                        lpx = kx
+                    gfxdraw.box(surface,((csx+(kx*font_size),posy+(ky*font_size)),(font_size,font_size)),colour)
+            if lpx-sx > highest:
+                highest = lpx-sx
+        csx += (highest+2)*font_size
 def Init_Palettes():
     files = glob("Mods/*/*.txt")
     for f in files:
@@ -187,7 +200,7 @@ def WorldGen_Generate(index):
         elif pros[0] == "building_wall":
             building_wall = Get_IndexFromName(pros[1])
         elif pros[0] == "building_floor":
-            building_floor = Get_IndexFromName(pros[1])
+            building_floor = Get_IndexFromNames(pros[1].split(","))
         elif pros[0] == "building_door":
             building_door = Get_IndexFromName(pros[1])
     for wx in range(x):
@@ -232,7 +245,7 @@ def WorldGen_Generate(index):
                     elif locx == 0 or locx == sizex-1 or locy == 0 or locy == sizey-1:
                         mapl[buildx][buildy] = building_wall
                     else:
-                        mapl[buildx][buildy] = building_floor
+                        mapl[buildx][buildy] = choice(building_floor)
 def Get_IndexFromName(name,index=tilemap_index):
     for t in range(len(tilemap_properties[index])):
         if tilemap_properties[index][t][0].lower() == name:
@@ -336,7 +349,7 @@ while game:
                 c = palettes[palette_index][1][player_sprite[drox][droy]]
                 p = (((locpx*tilewidth)+drox)*ts,((locpy*tilewidth)+droy)*ts)
                 gfxdraw.box(surface,(p,size),c)
-    Text("abcdefghijklmnopqrstuvwxyz1234567890-+*/",(255,255,255),ts*screenwidth*tilewidth,0)
+    Text("abcdefghijklmnopqrstuvwxyz1234567890-+*/",(255,255,255),ts*(screenwidth+0.5)*tilewidth*2,0)
     pygame.display.flip() # actually update the surface
     clock.tick(60) # cap the framerate (not usually necessary :/)
 pygame.quit()
