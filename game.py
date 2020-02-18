@@ -31,7 +31,8 @@ tilewidth = 10
 px = 50
 py = 50
 player_sprite = []
-player_inventory = [["Cardboard Sword",1],["Burger",7],["Burger",8]]
+player_inventory = [["Cardboard Sword",1],["Burger",7],["Swedish Meatballs",8]]
+player_health = [100,100]
 screenwidth = 5
 ts = 4
 surface = None
@@ -39,15 +40,17 @@ clock = None
 perlinfreq = 32
 font_index = -1
 font_file = "Core/tilemap_text.txt"
-font_size = 3
+font_size = 2
 inventoryscroll = 0
-entities = [[3,3,10,5,None,0]] # entity data [x,y,move_cooldown,move_time,path,path_update_cooldown] right now
+entities = [[3,3,10,6,None,0,100],[77,77,10,8,None,0,100],[2,80,10,11,None,0,100]]
+# entity data [x,y,move_cooldown,move_time,path,path_update_cooldown,health(will be replaced by body eventually)] right now
 path_reset = 5
 movex = 0
 movey = 0
 movec = 0
 movef = 5
 lastmessage = (WHITE,"Great. I have no idea where i am.")
+thoughts = [(GREEN,"I could be worse."),(GREEN,"I'm okay"),(GREEN,"I like grass"),(BLUE,"The cake is always a lie")]
 # FUNCTIONS
 def Entity_Move(e):
     if e[2] > e[3] and e[4]:
@@ -59,6 +62,10 @@ def Entity_Move(e):
         Entity_Move(e)
         return True
     return False
+def Entity_Attack():
+    global player_health
+    # eventually will be full n stuff + will actually work
+    player_health[0] -= 5
 def Entity_Step():
     for e in entities:
         if not e[4] or e[5] == 0:
@@ -66,12 +73,14 @@ def Entity_Step():
             e[5] = path_reset
         if e[2] > e[3] and e[4]:
             Entity_Move(e)
+        if Manhatten((e[0],e[1]),(px,py)) <= 2:
+            Entity_Attack()
         e[2] += movef
 def Pathfind(pos,target):
     # optimisation bit
     dist = Manhatten(pos,target)
-    if dist > 15:
-        target = ((target[0]+pos[0]//2),(target[1]+pos[1])//2)
+    if dist > 20:
+        return None
     if Tile_HasProperty(target[0],target[1],"impassable"):
         return None
     opens = [pos]
@@ -134,6 +143,16 @@ def String_ToIndexes(string):
     return indexes
 def Area_Colour(posx,posy,sizex,sizey,colour):
     gfxdraw.box(surface,((posx,posy),(sizex,sizey)),colour)
+def Bar(sx,sy,length,h,filledColour,emptyColour,progress):
+    sx = int(floor(sx))
+    sy = int(floor(sy))
+    fw = int((length*floor(progress*100))//100)
+    h = int(floor(h*(font_size/2)))
+    length = int(floor(length*(font_size/2)))
+    #print("%s=%s=%s=%s" % (sx,sy,length,h))
+    gfxdraw.rectangle(surface,((sx-3,sy-3),(length+6,h+6)),emptyColour)
+    gfxdraw.box(surface,((sx,sy),(int(floor(fw*(font_size/2))),h)),filledColour)
+    
 def Text(text,colour,posx,posy):
     indexes = String_ToIndexes(text)
     csx = int(floor(posx))
@@ -156,8 +175,9 @@ def Text(text,colour,posx,posy):
                         gfxdraw.box(surface,((csx+(kx*font_size),posy+(ky*font_size)),(font_size,font_size)),colour)
             ad = 2
             if lpx-sx == 0:
-                ad = 3
+                ad = 2
             csx += ((lpx-sx)+ad)*font_size
+    return csx-posx # return the total length of the text (for placement of other UI elements)
 def Init_Palettes():
     files = glob("Mods/*/*.txt")
     for f in files:
@@ -411,6 +431,10 @@ while game:
                 movey = -1
             elif event.key == pygame.K_s:
                 movey = 1
+            elif event.key == pygame.K_f:
+                font_size += 1
+            elif event.key == pygame.K_g:
+                font_size -= 1
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mpos = pygame.mouse.get_pos()
             if mpos[0] > ts*(screenwidth+0.5)*tilewidth*2 and mpos[1] < font_size*10*5:
@@ -477,12 +501,15 @@ while game:
                         c = palettes[palette_index][1][ne]
                         p = (((lex*tilewidth)+drax)*ts,((ley*tilewidth)+dray)*ts)
                         gfxdraw.box(surface,(p,size),c)
-    lastmessage = (GREEN,"i mean, could be worse.")
+    #lastmessage = (GREEN,"i mean, could be worse.")
     if enemies > 0:
         if enemies == 1:
             lastmessage = (RED,"an enemy spotted!")
         else:
             lastmessage = (RED,str(enemies) + " enemies spotted!")
+    else:
+        if lastmessage[0] == RED or rint(0,1000) == 0:
+            lastmessage = choice(thoughts)
     xp_aftermap = ts*(screenwidth+0.5)*tilewidth*2
     yp_aftermap = ts*(screenwidth+0.5)*tilewidth*2
     Text("Inventory",(255,255,255),xp_aftermap,0)
@@ -497,11 +524,16 @@ while game:
             text = ("+ %sx " %item[1]) + item[0]
             if item[1] == 1:
                 text = "+ " + item[0]
-            Text(text,(255,255,255),xp_aftermap,ind*10*font_size)
+            Text(text,WHITE,xp_aftermap,ind*10*font_size)
             ind += 1
     else:
-        Text("- Empty",(255,255,255),xp_aftermap,ind*10*font_size)
+        Text("- Empty",WHITE,xp_aftermap,ind*10*font_size)
         ind += 1
+    #print(player_health[0]/player_health[1])
+    hlen = Text("Health",RED,xp_aftermap,ind*10*font_size)
+    #print(hlen)
+    Bar(xp_aftermap+(5*font_size)+int(hlen),ind*10*font_size+5+(2*font_size),200,10,RED,WHITE,player_health[0]/player_health[1])
+    ind += 1
     #Text("hello there",(255,255,255),ts*(screenwidth+0.5)*tilewidth*2,0)
     Text(lastmessage[1],lastmessage[0],0,yp_aftermap)
     pygame.display.flip() # actually update the surface
