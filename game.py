@@ -66,6 +66,7 @@ def Entity_Attack():
     global player_health
     # eventually will be full n stuff + will actually work
     player_health[0] -= 5
+    print("yhello")
 def Entity_Step():
     for e in entities:
         if not e[4] or e[5] == 0:
@@ -132,7 +133,7 @@ def Construct(cameFrom,current):
         current = path[0]
     return path[1:]
 def Manhatten(pos,target):
-    return abs(target[0]-pos[0]) + abs(target[1]-pos[0])
+    return abs(target[0]-pos[0]) + abs(target[1]-pos[1])
 
 def String_ToIndexes(string):
     global font_index
@@ -151,7 +152,8 @@ def Bar(sx,sy,length,h,filledColour,emptyColour,progress):
     length = int(floor(length*(font_size/2)))
     #print("%s=%s=%s=%s" % (sx,sy,length,h))
     gfxdraw.rectangle(surface,((sx-3,sy-3),(length+6,h+6)),emptyColour)
-    gfxdraw.box(surface,((sx,sy),(int(floor(fw*(font_size/2))),h)),filledColour)
+    if fw > 0:
+        gfxdraw.box(surface,((sx,sy),(int(floor(fw*(font_size/2))),h)),filledColour)
     
 def Text(text,colour,posx,posy):
     indexes = String_ToIndexes(text)
