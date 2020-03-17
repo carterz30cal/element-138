@@ -425,18 +425,21 @@ while game:
         if event.type == pygame.QUIT:
             game = False
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_d:
-                movex = 1
-            elif event.key == pygame.K_a:
-                movex = -1
-            elif event.key == pygame.K_w:
-                movey = -1
-            elif event.key == pygame.K_s:
-                movey = 1
-            elif event.key == pygame.K_f:
-                font_size += 1
-            elif event.key == pygame.K_g:
-                font_size -= 1
+            if player_health[0] > 0:
+                if event.key == pygame.K_d:
+                    movex = 1
+                elif event.key == pygame.K_a:
+                    movex = -1
+                elif event.key == pygame.K_w:
+                    movey = -1
+                elif event.key == pygame.K_s:
+                    movey = 1
+                elif event.key == pygame.K_f:
+                    font_size += 1
+                elif event.key == pygame.K_g:
+                    font_size -= 1
+            else:
+                lastmessage = (RED,"You're dead. Stop trying to do stuff")
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mpos = pygame.mouse.get_pos()
             if mpos[0] > ts*(screenwidth+0.5)*tilewidth*2 and mpos[1] < font_size*10*5:
@@ -504,13 +507,13 @@ while game:
                         p = (((lex*tilewidth)+drax)*ts,((ley*tilewidth)+dray)*ts)
                         gfxdraw.box(surface,(p,size),c)
     #lastmessage = (GREEN,"i mean, could be worse.")
-    if enemies > 0:
+    if enemies > 0 and player_health[0] > 0:
         if enemies == 1:
             lastmessage = (RED,"an enemy spotted!")
         else:
             lastmessage = (RED,str(enemies) + " enemies spotted!")
     else:
-        if lastmessage[0] == RED or rint(0,1000) == 0:
+        if player_health[0] > 0 and lastmessage[0] == RED or rint(0,1000) == 0:
             lastmessage = choice(thoughts)
     xp_aftermap = ts*(screenwidth+0.5)*tilewidth*2
     yp_aftermap = ts*(screenwidth+0.5)*tilewidth*2
